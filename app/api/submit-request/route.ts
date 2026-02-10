@@ -58,7 +58,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: imgResult.error }, { status: 400 });
     }
 
-    if (process.env.RECAPTCHA_SECRET_KEY) {
+    const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
+    const recaptchaEnabled =
+      recaptchaSecret &&
+      recaptchaSecret !== "your-recaptcha-secret-key" &&
+      !recaptchaSecret.startsWith("your-");
+    if (recaptchaEnabled) {
       const isValidRecaptcha = await verifyRecaptcha(recaptchaToken ?? "");
       if (!isValidRecaptcha) {
         return NextResponse.json(
