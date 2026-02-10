@@ -13,8 +13,7 @@ export async function sendSubmissionEmail(params: SendSubmissionEmailParams) {
   const baseUrl = process.env.APP_BASE_URL;
 
   if (!apiKey || !fromEmail || !toEmail || !baseUrl) {
-    console.error("SendGrid or email config missing");
-    throw new Error("Email configuration incomplete");
+    return; // Skip when not configured
   }
 
   const adminDetailUrl = `${baseUrl}/admin/${params.submissionId}`;

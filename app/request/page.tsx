@@ -60,14 +60,13 @@ export default function RequestPage() {
     e.preventDefault();
     setErrors({});
 
-    const recaptchaToken =
-      typeof window !== "undefined" &&
-      typeof (window as unknown as { grecaptcha?: { execute: (siteKey: string, opts: { action: string }) => Promise<string> } }).grecaptcha?.execute === "function"
-        ? await (window as unknown as { grecaptcha: { execute: (siteKey: string, opts: { action: string }) => Promise<string> } }).grecaptcha.execute(
-            RECAPTCHA_SITE_KEY ?? "",
-            { action: "submit" }
-          )
-        : "";
+    let recaptchaToken = "";
+    if (RECAPTCHA_SITE_KEY && typeof window !== "undefined") {
+      const grecaptcha = (window as unknown as { grecaptcha?: { execute: (siteKey: string, opts: { action: string }) => Promise<string> } }).grecaptcha;
+      if (typeof grecaptcha?.execute === "function") {
+        recaptchaToken = await grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: "submit" });
+      }
+    }
 
     const payload = {
       itemDescription,

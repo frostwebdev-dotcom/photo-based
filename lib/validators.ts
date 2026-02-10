@@ -13,7 +13,7 @@ export const submissionSchema = z.object({
     .string()
     .min(5, "Contact details must be at least 5 characters")
     .max(200, "Contact details must be at most 200 characters"),
-  recaptchaToken: z.string().min(1, "reCAPTCHA verification required"),
+  recaptchaToken: z.string().optional().default(""),
 });
 
 export type SubmissionInput = z.infer<typeof submissionSchema>;

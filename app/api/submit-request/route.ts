@@ -58,12 +58,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: imgResult.error }, { status: 400 });
     }
 
-    const isValidRecaptcha = await verifyRecaptcha(recaptchaToken);
-    if (!isValidRecaptcha) {
-      return NextResponse.json(
-        { message: "Verification failed. Please try again." },
-        { status: 400 }
-      );
+    if (process.env.RECAPTCHA_SECRET_KEY) {
+      const isValidRecaptcha = await verifyRecaptcha(recaptchaToken ?? "");
+      if (!isValidRecaptcha) {
+        return NextResponse.json(
+          { message: "Verification failed. Please try again." },
+          { status: 400 }
+        );
+      }
     }
 
     const supabase = createServiceClient();

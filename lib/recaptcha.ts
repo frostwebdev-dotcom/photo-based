@@ -3,8 +3,7 @@ const RECAPTCHA_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify";
 export async function verifyRecaptcha(token: string): Promise<boolean> {
   const secret = process.env.RECAPTCHA_SECRET_KEY;
   if (!secret) {
-    console.error("RECAPTCHA_SECRET_KEY not configured");
-    return false;
+    return true; // Skip verification when not configured
   }
 
   try {
