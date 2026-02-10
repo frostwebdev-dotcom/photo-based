@@ -14,6 +14,10 @@ import {
 } from "@/lib/validators";
 
 const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+const RECAPTCHA_ENABLED =
+  RECAPTCHA_SITE_KEY &&
+  RECAPTCHA_SITE_KEY !== "your-recaptcha-site-key" &&
+  !RECAPTCHA_SITE_KEY.startsWith("your-");
 
 export default function RequestPage() {
   const router = useRouter();
@@ -61,10 +65,10 @@ export default function RequestPage() {
     setErrors({});
 
     let recaptchaToken = "";
-    if (RECAPTCHA_SITE_KEY && typeof window !== "undefined") {
+    if (RECAPTCHA_ENABLED && typeof window !== "undefined") {
       const grecaptcha = (window as unknown as { grecaptcha?: { execute: (siteKey: string, opts: { action: string }) => Promise<string> } }).grecaptcha;
       if (typeof grecaptcha?.execute === "function") {
-        recaptchaToken = await grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: "submit" });
+        recaptchaToken = await grecaptcha.execute(RECAPTCHA_SITE_KEY!, { action: "submit" });
       }
     }
 
@@ -125,7 +129,7 @@ export default function RequestPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {RECAPTCHA_SITE_KEY && (
+      {RECAPTCHA_ENABLED && (
         <Script
           src={`https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`}
           strategy="lazyOnload"
