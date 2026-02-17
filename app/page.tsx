@@ -2,34 +2,41 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen overflow-x-hidden">
       {/* Header */}
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <span className="text-xl font-bold text-emerald-600">Junk Quote</span>
-            <nav className="flex gap-4">
+            <nav className="flex flex-wrap items-center justify-center gap-2 sm:justify-end sm:gap-4">
+              <a
+                href="tel:+17208102002"
+                className="min-h-[44px] min-w-[44px] rounded-lg px-3 py-2.5 text-sm font-medium text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 active:bg-emerald-100 sm:py-2"
+                aria-label="Call for a quote (720) 810-2002"
+              >
+                <span className="hidden sm:inline">Call for a quote: </span>(720) 810-2002
+              </a>
               <Link
                 href="/request"
-                className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                className="min-h-[44px] flex min-w-[44px] items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 active:bg-slate-200 sm:py-2"
               >
                 Get Quote
               </Link>
               <Link
                 href="#how-it-works"
-                className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                className="min-h-[44px] flex min-w-[44px] items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 active:bg-slate-200 sm:py-2"
               >
                 How it works
               </Link>
               <Link
                 href="#faq"
-                className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                className="min-h-[44px] flex min-w-[44px] items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 active:bg-slate-200 sm:py-2"
               >
                 FAQ
               </Link>
               <Link
                 href="#contact"
-                className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                className="min-h-[44px] flex min-w-[44px] items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 active:bg-slate-200 sm:py-2"
               >
                 Contact
               </Link>
@@ -41,19 +48,25 @@ export default function HomePage() {
       {/* Hero */}
       <section className="bg-gradient-to-b from-emerald-50 to-white px-4 py-16 sm:py-24">
         <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl md:text-5xl">
             Get a quick quote for your junk removal
           </h1>
           <p className="mt-4 text-lg text-slate-600">
             Snap a photo, tell us what you have and where, and we&apos;ll reply with a quote soon. No account needed.
           </p>
-          <div className="mt-8">
+          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
               href="/request"
-              className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+              className="inline-flex min-h-[48px] w-full min-w-0 max-w-sm shrink-0 items-center justify-center rounded-lg bg-emerald-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 active:bg-emerald-700 sm:w-auto"
             >
               Upload Your Junk
             </Link>
+            <a
+              href="tel:+17208102002"
+              className="inline-flex min-h-[48px] w-full min-w-0 max-w-sm shrink-0 items-center justify-center rounded-lg border-2 border-emerald-600 bg-white px-8 py-3.5 text-base font-semibold text-emerald-600 hover:bg-emerald-50 active:bg-emerald-100 sm:w-auto"
+            >
+              Call (720) 810-2002
+            </a>
           </div>
         </div>
       </section>
@@ -116,10 +129,16 @@ export default function HomePage() {
           <p className="mt-4 text-slate-600">
             Have questions? Use the form to submit your junk for a quote, or reach out directly if you prefer.
           </p>
-          <div className="mt-6">
+          <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <a
+              href="tel:+17208102002"
+              className="inline-flex min-h-[48px] w-full min-w-0 max-w-sm shrink-0 items-center justify-center rounded-lg bg-emerald-600 px-5 py-3 text-base font-semibold text-white shadow-sm hover:bg-emerald-500 active:bg-emerald-700 sm:max-w-none sm:px-6"
+            >
+              Call for a quote: (720) 810-2002
+            </a>
             <Link
               href="/request"
-              className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500"
+              className="inline-flex min-h-[48px] w-full min-w-0 max-w-sm shrink-0 items-center justify-center rounded-lg border-2 border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 active:bg-slate-100 sm:max-w-none"
             >
               Submit a request
             </Link>
