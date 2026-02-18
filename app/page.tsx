@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MobileNavDrawer } from "@/components/MobileNavDrawer";
 
 export default function HomePage() {
   return (
@@ -6,37 +7,48 @@ export default function HomePage() {
       {/* Header */}
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center justify-between">
             <span className="text-xl font-bold text-emerald-600">Junk Quote</span>
-            <nav className="flex flex-wrap items-center justify-center gap-2 sm:justify-end sm:gap-4">
+            {/* Mobile: hamburger + drawer */}
+            <MobileNavDrawer />
+            {/* Desktop: full nav */}
+            <nav className="hidden flex-wrap items-center justify-end gap-2 sm:flex sm:gap-4">
               <a
                 href="tel:+17208102002"
-                className="min-h-[44px] min-w-[44px] rounded-lg px-3 py-2.5 text-sm font-medium text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 active:bg-emerald-100 sm:py-2"
+                className="min-h-[44px] min-w-[44px] rounded-lg px-3 py-2 text-sm font-medium text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 active:bg-emerald-100"
                 aria-label="Call for a quote (720) 810-2002"
               >
                 <span className="hidden sm:inline">Call for a quote: </span>(720) 810-2002
               </a>
+              <a
+                href="mailto:Postyourjunk335@gmail.com"
+                className="min-h-[44px] flex min-w-[44px] items-center rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 active:bg-slate-200"
+                aria-label="Email Postyourjunk335@gmail.com"
+              >
+                <span className="md:hidden">Email</span>
+                <span className="hidden md:inline">Email: Postyourjunk335@gmail.com</span>
+              </a>
               <Link
                 href="/request"
-                className="min-h-[44px] flex min-w-[44px] items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 active:bg-slate-200 sm:py-2"
+                className="min-h-[44px] flex min-w-[44px] items-center rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 active:bg-slate-200"
               >
                 Get Quote
               </Link>
               <Link
                 href="#how-it-works"
-                className="min-h-[44px] flex min-w-[44px] items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 active:bg-slate-200 sm:py-2"
+                className="min-h-[44px] flex min-w-[44px] items-center rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 active:bg-slate-200"
               >
                 How it works
               </Link>
               <Link
                 href="#faq"
-                className="min-h-[44px] flex min-w-[44px] items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 active:bg-slate-200 sm:py-2"
+                className="min-h-[44px] flex min-w-[44px] items-center rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 active:bg-slate-200"
               >
                 FAQ
               </Link>
               <Link
                 href="#contact"
-                className="min-h-[44px] flex min-w-[44px] items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 active:bg-slate-200 sm:py-2"
+                className="min-h-[44px] flex min-w-[44px] items-center rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 active:bg-slate-200"
               >
                 Contact
               </Link>
@@ -125,16 +137,24 @@ export default function HomePage() {
       {/* Contact */}
       <section id="contact" className="border-t border-slate-200 px-4 py-16">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-2xl font-bold text-slate-900">Contact</h2>
-          <p className="mt-4 text-slate-600">
-            Have questions? Use the form to submit your junk for a quote, or reach out directly if you prefer.
+          <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">Contact</h2>
+          <p className="mt-4 break-words text-slate-600">
+            Have questions? Use the form to submit your junk for a quote, or reach out by phone or email.
+          </p>
+          <p className="mt-3 break-words text-slate-600">
+            <a
+              href="mailto:Postyourjunk335@gmail.com"
+              className="font-medium text-emerald-600 underline decoration-emerald-600/30 underline-offset-2 hover:text-emerald-700 hover:decoration-emerald-600"
+            >
+              Postyourjunk335@gmail.com
+            </a>
           </p>
           <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <a
               href="tel:+17208102002"
-              className="inline-flex min-h-[48px] w-full min-w-0 max-w-sm shrink-0 items-center justify-center rounded-lg bg-emerald-600 px-5 py-3 text-base font-semibold text-white shadow-sm hover:bg-emerald-500 active:bg-emerald-700 sm:max-w-none sm:px-6"
+              className="inline-flex min-h-[48px] w-full min-w-0 max-w-sm shrink-0 items-center justify-center rounded-lg bg-emerald-600 px-5 py-3 text-center text-base font-semibold text-white shadow-sm hover:bg-emerald-500 active:bg-emerald-700 sm:max-w-none sm:px-6"
             >
-              Call for a quote: (720) 810-2002
+              <span className="hidden sm:inline">Call for a quote: </span>(720) 810-2002
             </a>
             <Link
               href="/request"
@@ -147,12 +167,20 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white px-4 py-8">
-        <div className="mx-auto max-w-6xl flex flex-col items-center justify-between gap-4 sm:flex-row">
+      <footer className="border-t border-slate-200 bg-white px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom))]">
+        <div className="mx-auto max-w-6xl flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
           <span className="text-sm text-slate-500">© Junk Quote. All rights reserved.</span>
-          <Link href="/admin/login" className="text-sm text-slate-500 hover:text-slate-700">
-            Admin
-          </Link>
+          <div className="flex flex-col items-center gap-1 sm:flex-row sm:items-center sm:gap-4">
+            <a
+              href="mailto:Postyourjunk335@gmail.com"
+              className="break-words text-center text-sm text-slate-500 hover:text-emerald-600 hover:underline sm:text-left"
+            >
+              Postyourjunk335@gmail.com
+            </a>
+            <Link href="/admin/login" className="text-sm text-slate-500 hover:text-slate-700">
+              Admin
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
