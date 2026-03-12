@@ -18,6 +18,7 @@ type Submission = {
   contact_details: string;
   image_path: string;
   signed_image_url?: string;
+  image_count?: number;
 };
 
 const STATUS_OPTIONS = ["", "New", "Quoted", "Scheduled", "Archived"];
@@ -150,7 +151,8 @@ export default function AdminDashboardPage() {
                   <th className="px-4 py-3 text-left text-sm font-semibold text-slate-900">Description</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-slate-900">Location</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-slate-900">Contact</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-900">Image</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-900">Images</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-slate-900">Preview</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-slate-900">Actions</th>
                 </tr>
               </thead>
@@ -172,8 +174,20 @@ export default function AdminDashboardPage() {
                     <td className="px-4 py-3 text-sm text-slate-600 max-w-[120px] truncate">
                       {shortLoc(s.contact_details)}
                     </td>
+                    <td className="px-4 py-3 text-sm text-slate-600">
+                      {s.image_count != null ? (
+                        <span className="font-medium" title={`${s.image_count} photo${s.image_count !== 1 ? "s" : ""}`}>
+                          {s.image_count}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3">
-                      <ThumbnailCell signedImageUrl={s.signed_image_url ?? null} />
+                      <ThumbnailCell
+                        signedImageUrl={s.signed_image_url ?? null}
+                        imageCount={s.image_count ?? 1}
+                      />
                     </td>
                     <td className="px-4 py-3 flex flex-wrap gap-1">
                       <Link
@@ -263,18 +277,63 @@ function SignOutButton() {
 
 function ThumbnailCell({
   signedImageUrl,
+  imageCount = 1,
 }: {
   signedImageUrl: string | null;
+  imageCount?: number;
 }) {
   if (!signedImageUrl) return <span className="text-xs text-slate-400">—</span>;
 
+  const overlap = imageCount >= 2;
+  const layers = overlap ? Math.min(imageCount, 3) : 1; // show up to 3 stacked layers
+  const size = 48;
+  const offset = 6;
+  const stackW = size + (layers - 1) * offset;
+  const stackH = size + (layers - 1) * offset;
+
   return (
-    <a href={signedImageUrl} target="_blank" rel="noopener noreferrer" className="block">
-      <img
-        src={signedImageUrl}
-        alt="Thumb"
-        className="h-12 w-12 rounded object-cover"
-      />
+    <a
+      href={signedImageUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="relative inline-block overflow-visible"
+    >
+      <span
+        className="relative inline-block overflow-visible"
+        style={{ width: overlap ? stackW : size, height: overlap ? stackH : size }}
+      >
+        {overlap
+          ? Array.from({ length: layers }, (_, i) => (
+              <img
+                key={i}
+                src={signedImageUrl}
+                alt={`Thumb ${i + 1}`}
+                className="absolute rounded border border-white shadow-sm object-cover bg-slate-100"
+                style={{
+                  width: size,
+                  height: size,
+                  left: i * offset,
+                  top: i * offset,
+                  zIndex: layers - i,
+                }}
+              />
+            ))
+          : (
+            <img
+              src={signedImageUrl}
+              alt="Thumb"
+              className="h-12 w-12 rounded border border-slate-200 object-cover"
+            />
+          )}
+        {overlap && imageCount > 3 && (
+          <span
+            className="absolute bottom-0 right-0 rounded bg-slate-800/80 text-white text-xs font-medium px-1.5 py-0.5 min-w-[20px] text-center"
+            style={{ zIndex: layers + 1 }}
+          >
+            {imageCount}
+          </span>
+        )}
+      </span>
     </a>
   );
 }

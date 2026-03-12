@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
       const paths = getImagePaths(r.image_path);
       const firstPath = paths[0];
       const signed_image_url = firstPath ? await createSignedUrl(firstPath) : "";
-      return { ...r, signed_image_url };
+      return { ...r, signed_image_url, image_count: paths.length };
     })
   );
 
