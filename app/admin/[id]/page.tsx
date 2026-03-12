@@ -31,10 +31,11 @@ export default function AdminDetailPage() {
   const [status, setStatus] = useState("");
   const [adminNotes, setAdminNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [removingIndex, setRemovingIndex] = useState<number | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-  useEffect(() => {
-    fetch(`/api/admin/submissions/${id}`)
+  const fetchSubmission = () => {
+    return fetch(`/api/admin/submissions/${id}`)
       .then((r) => {
         if (r.status === 401) {
           router.push("/admin/login");
@@ -48,9 +49,35 @@ export default function AdminDetailPage() {
           setStatus(data.status);
           setAdminNotes(data.admin_notes ?? "");
         }
-      })
-      .finally(() => setLoading(false));
+      });
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    fetchSubmission().finally(() => setLoading(false));
   }, [id, router]);
+
+  const handleRemoveImage = async (index: number) => {
+    setRemovingIndex(index);
+    try {
+      const res = await fetch(`/api/admin/submissions/${id}/remove-image`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ index }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setToast({ message: data.message ?? "Failed to remove image", type: "error" });
+        return;
+      }
+      setToast({ message: "Image removed", type: "success" });
+      await fetchSubmission();
+    } catch {
+      setToast({ message: "Failed to remove image", type: "error" });
+    } finally {
+      setRemovingIndex(null);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -131,29 +158,41 @@ export default function AdminDetailPage() {
               : submission.signed_image_url
                 ? [submission.signed_image_url]
                 : [];
-            if (urls.length === 0) return null;
             return (
               <div className="mt-6">
                 <h2 className="text-sm font-semibold text-slate-700">
                   {urls.length === 1 ? "Image" : "Images"}
                 </h2>
-                <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {urls.map((url, i) => (
-                    <a
-                      key={i}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block"
-                    >
-                      <img
-                        src={url}
-                        alt={`Submission ${i + 1}`}
-                        className="max-h-64 w-full rounded-lg border border-slate-200 object-contain"
-                      />
-                    </a>
-                  ))}
-                </div>
+                {urls.length === 0 ? (
+                  <p className="mt-2 text-sm text-slate-500">No images.</p>
+                ) : (
+                  <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {urls.map((url, i) => (
+                      <div key={i} className="relative group">
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block"
+                        >
+                          <img
+                            src={url}
+                            alt={`Submission ${i + 1}`}
+                            className="max-h-64 w-full rounded-lg border border-slate-200 object-contain"
+                          />
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(i)}
+                          disabled={removingIndex !== null}
+                          className="absolute top-2 right-2 rounded bg-red-600 px-2 py-1 text-xs font-medium text-white shadow hover:bg-red-500 disabled:opacity-50"
+                        >
+                          {removingIndex === i ? "Removing…" : "Remove"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })()}
