@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabaseServer";
-import { createSignedUrl } from "@/lib/signedUrl";
+import { createSignedUrlsForPaths } from "@/lib/signedUrl";
 
 export async function GET(
   _req: NextRequest,
@@ -28,11 +28,12 @@ export async function GET(
     );
   }
 
-  const signedImageUrl = await createSignedUrl(data.image_path);
+  const signedUrls = await createSignedUrlsForPaths(data.image_path);
 
   return NextResponse.json({
     ...data,
-    signed_image_url: signedImageUrl,
+    signed_image_url: signedUrls[0] ?? "",
+    signed_image_urls: signedUrls,
   });
 }
 

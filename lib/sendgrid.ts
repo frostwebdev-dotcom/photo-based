@@ -3,7 +3,7 @@ type SendSubmissionEmailParams = {
   itemDescription: string;
   pickupLocation: string;
   contactDetails: string;
-  signedImageUrl: string;
+  signedImageUrls: string[];
 };
 
 export async function sendSubmissionEmail(params: SendSubmissionEmailParams) {
@@ -38,7 +38,7 @@ export async function sendSubmissionEmail(params: SendSubmissionEmailParams) {
   <p>${escapeHtml(params.pickupLocation)}</p>
   <p><strong>Contact Details:</strong></p>
   <p>${escapeHtml(params.contactDetails)}</p>
-  <p><strong>Image:</strong> <a href="${params.signedImageUrl}">View uploaded image</a></p>
+  <p><strong>Image(s):</strong> ${params.signedImageUrls.length === 0 ? "—" : params.signedImageUrls.map((url, i) => `<a href="${url}">View image ${i + 1}</a>`).join(" | ")}</p>
   <p><a href="${adminDetailUrl}" style="display:inline-block; padding:10px 20px; background:#16a34a; color:white; text-decoration:none; border-radius:6px;">Open in Admin</a></p>
 </body>
 </html>`,

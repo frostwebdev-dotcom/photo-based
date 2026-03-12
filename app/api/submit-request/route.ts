@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     const pickupLocation = formData.get("pickupLocation") as string;
     const contactDetails = formData.get("contactDetails") as string;
     const recaptchaToken = formData.get("recaptchaToken") as string;
-    const file = formData.get("file") as File | null;
+    const fileList = formData.getAll("file") as File[];
 
     const parsed = submissionSchema.safeParse({
       itemDescription,
@@ -46,16 +46,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: msg }, { status: 400 });
     }
 
-    if (!file || file.size === 0) {
+    const files = fileList.filter((f) => f && typeof f.size === "number" && f.size > 0);
+    if (files.length === 0) {
       return NextResponse.json(
-        { message: "Please upload a JPG or PNG image (max 10MB)." },
+        { message: "Please upload at least one photo (JPG or PNG, max 10MB each)." },
+        { status: 400 }
+      );
+    }
+    if (files.length > 10) {
+      return NextResponse.json(
+        { message: "Maximum 10 photos allowed." },
         { status: 400 }
       );
     }
 
-    const imgResult = validateImageFile(file);
-    if (!imgResult.valid) {
-      return NextResponse.json({ message: imgResult.error }, { status: 400 });
+    for (const file of files) {
+      const imgResult = validateImageFile(file);
+      if (!imgResult.valid) {
+        return NextResponse.json({ message: imgResult.error }, { status: 400 });
+      }
     }
 
     const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
@@ -74,30 +83,38 @@ export async function POST(req: NextRequest) {
     }
 
     const supabase = createServiceClient();
-
     const submissionId = crypto.randomUUID();
-    const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-    const safeExt = ext === "jpeg" ? "jpg" : ext;
     const timestamp = Date.now();
-    const random = Math.random().toString(36).slice(2, 10);
-    const storagePath = `submissions/${submissionId}/${timestamp}-${random}.${safeExt}`;
+    const uploadedPaths: string[] = [];
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+      const safeExt = ext === "jpeg" ? "jpg" : ext;
+      const random = Math.random().toString(36).slice(2, 10);
+      const storagePath = `submissions/${submissionId}/${timestamp}-${i}-${random}.${safeExt}`;
+      const buffer = Buffer.from(await file.arrayBuffer());
 
-    const { error: uploadError } = await supabase.storage
-      .from(BUCKET)
-      .upload(storagePath, buffer, {
-        contentType: file.type,
-        upsert: false,
-      });
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET)
+        .upload(storagePath, buffer, {
+          contentType: file.type,
+          upsert: false,
+        });
 
-    if (uploadError) {
-      console.error("Storage upload error:", uploadError);
-      return NextResponse.json(
-        { message: "Failed to upload image. Please try again." },
-        { status: 500 }
-      );
+      if (uploadError) {
+        console.error("Storage upload error:", uploadError);
+        await supabase.storage.from(BUCKET).remove(uploadedPaths);
+        return NextResponse.json(
+          { message: "Failed to upload image. Please try again." },
+          { status: 500 }
+        );
+      }
+      uploadedPaths.push(storagePath);
     }
+
+    const imagePathValue = uploadedPaths.length === 1 ? uploadedPaths[0] : JSON.stringify(uploadedPaths);
+    const firstFile = files[0];
 
     const { data: submission, error: insertError } = await supabase
       .from("submissions")
@@ -106,22 +123,24 @@ export async function POST(req: NextRequest) {
         item_description: itemDescription,
         pickup_location: pickupLocation,
         contact_details: contactDetails,
-        image_path: storagePath,
-        image_mime: file.type,
-        image_size: file.size,
+        image_path: imagePathValue,
+        image_mime: firstFile.type,
+        image_size: firstFile.size,
       })
       .select("id")
       .single();
 
     if (insertError) {
       console.error("Insert error:", insertError);
-      await supabase.storage.from(BUCKET).remove([storagePath]);
+      await supabase.storage.from(BUCKET).remove(uploadedPaths);
       return NextResponse.json(
         { message: "Failed to save request. Please try again." },
         { status: 500 }
       );
     }
-    const signedUrl = await createSignedUrl(storagePath);
+
+    const { createSignedUrlsForPaths } = await import("@/lib/signedUrl");
+    const signedUrls = await createSignedUrlsForPaths(imagePathValue);
 
     try {
       await sendSubmissionEmail({
@@ -129,7 +148,7 @@ export async function POST(req: NextRequest) {
         itemDescription,
         pickupLocation,
         contactDetails,
-        signedImageUrl: signedUrl,
+        signedImageUrls: signedUrls,
       });
     } catch (emailErr) {
       console.error("Email send failed:", emailErr);

@@ -19,6 +19,7 @@ type Submission = {
   image_path: string;
   admin_notes: string | null;
   signed_image_url: string;
+  signed_image_urls?: string[];
 };
 
 export default function AdminDetailPage() {
@@ -124,23 +125,38 @@ export default function AdminDetailPage() {
             </div>
           </div>
 
-          {submission.signed_image_url && (
-            <div className="mt-6">
-              <h2 className="text-sm font-semibold text-slate-700">Image</h2>
-              <a
-                href={submission.signed_image_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-block"
-              >
-                <img
-                  src={submission.signed_image_url}
-                  alt="Submission"
-                  className="max-h-64 rounded-lg border border-slate-200 object-contain"
-                />
-              </a>
-            </div>
-          )}
+          {(() => {
+            const urls = submission.signed_image_urls?.length
+              ? submission.signed_image_urls
+              : submission.signed_image_url
+                ? [submission.signed_image_url]
+                : [];
+            if (urls.length === 0) return null;
+            return (
+              <div className="mt-6">
+                <h2 className="text-sm font-semibold text-slate-700">
+                  {urls.length === 1 ? "Image" : "Images"}
+                </h2>
+                <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {urls.map((url, i) => (
+                    <a
+                      key={i}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block"
+                    >
+                      <img
+                        src={url}
+                        alt={`Submission ${i + 1}`}
+                        className="max-h-64 w-full rounded-lg border border-slate-200 object-contain"
+                      />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           <div className="mt-8 border-t border-slate-200 pt-6">
             <h2 className="text-sm font-semibold text-slate-700">Update</h2>

@@ -24,38 +24,49 @@ export default function RequestPage() {
   const [itemDescription, setItemDescription] = useState("");
   const [pickupLocation, setPickupLocation] = useState("");
   const [contactDetails, setContactDetails] = useState("");
-  const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const MAX_PHOTOS = 10;
+  const [files, setFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) {
-      setFile(null);
-      setPreviewUrl((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
-        return null;
+    const selected = Array.from(e.target.files ?? []);
+    if (selected.length === 0) {
+      setPreviewUrls((prev) => {
+        prev.forEach((u) => URL.revokeObjectURL(u));
+        return [];
       });
+      setFiles([]);
       setErrors((prev) => ({ ...prev, file: "" }));
       return;
     }
 
-    const result = validateImageFile(f);
-    if (!result.valid) {
-      setFile(null);
-      setPreviewUrl((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
-        return null;
+    const next: File[] = [];
+    let fileError = "";
+    for (let i = 0; i < Math.min(selected.length, MAX_PHOTOS); i++) {
+      const f = selected[i];
+      const result = validateImageFile(f);
+      if (!result.valid) {
+        fileError = result.error;
+        break;
+      }
+      next.push(f);
+    }
+    if (fileError) {
+      setFiles([]);
+      setPreviewUrls((prev) => {
+        prev.forEach((u) => URL.revokeObjectURL(u));
+        return [];
       });
-      setErrors((prev) => ({ ...prev, file: result.error }));
+      setErrors((prev) => ({ ...prev, file: fileError }));
       return;
     }
 
-    setFile(f);
-    setPreviewUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return URL.createObjectURL(f);
+    setFiles(next);
+    setPreviewUrls((prev) => {
+      prev.forEach((u) => URL.revokeObjectURL(u));
+      return next.map((f) => URL.createObjectURL(f));
     });
     setErrors((prev) => ({ ...prev, file: "" }));
   }, []);
@@ -90,8 +101,8 @@ export default function RequestPage() {
       return;
     }
 
-    if (!file) {
-      setErrors((prev) => ({ ...prev, file: "Please upload a JPG or PNG image (max 10MB)." }));
+    if (files.length === 0) {
+      setErrors((prev) => ({ ...prev, file: "Please upload at least one photo (JPG or PNG, max 10MB each)." }));
       return;
     }
 
@@ -102,7 +113,7 @@ export default function RequestPage() {
       formData.append("itemDescription", itemDescription);
       formData.append("pickupLocation", pickupLocation);
       formData.append("contactDetails", contactDetails);
-      formData.append("file", file);
+      files.forEach((f) => formData.append("file", f));
       formData.append("recaptchaToken", recaptchaToken);
 
       const res = await fetch("/api/submit-request", {
@@ -149,7 +160,7 @@ export default function RequestPage() {
           Request a junk quote
         </h1>
         <p className="mt-2 text-slate-600">
-          Fill in the form and upload a photo. We&apos;ll reply with a quote soon.
+          Fill in the form and upload up to {MAX_PHOTOS} photos. We&apos;ll reply with a quote soon.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
@@ -189,27 +200,32 @@ export default function RequestPage() {
 
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              Photo <span className="text-slate-500">(JPG or PNG, max 10MB)</span>
+              Photos <span className="text-slate-500">(up to {MAX_PHOTOS}, JPG or PNG, max 10MB each)</span>
             </label>
             <input
               type="file"
               accept={ALLOWED_MIME_TYPES.join(",")}
+              multiple
               onChange={handleFileChange}
               className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-4 file:py-2.5 file:text-emerald-700 file:hover:file:bg-emerald-100"
             />
             {errors.file && <p className="mt-1 text-sm text-red-600">{errors.file}</p>}
-            {previewUrl && (
-              <div className="mt-4">
-                <img
-                  src={previewUrl}
-                  alt="Preview"
-                  className="max-h-48 rounded-lg border border-slate-200 object-contain"
-                />
-                {file && (
-                  <p className="mt-1 text-xs text-slate-500">
-                    {(file.size / 1024).toFixed(0)} KB
-                  </p>
-                )}
+            {previewUrls.length > 0 && (
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {previewUrls.map((url, i) => (
+                  <div key={url} className="relative">
+                    <img
+                      src={url}
+                      alt={`Preview ${i + 1}`}
+                      className="max-h-40 w-full rounded-lg border border-slate-200 object-cover"
+                    />
+                    {files[i] && (
+                      <p className="mt-1 text-xs text-slate-500">
+                        {(files[i].size / 1024).toFixed(0)} KB
+                      </p>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </div>

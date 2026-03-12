@@ -20,12 +20,16 @@ CREATE INDEX IF NOT EXISTS idx_submissions_created_at ON submissions (created_at
 ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
 
 -- Deny anon access (server uses service role which bypasses RLS)
+-- Drop first so migration is idempotent when re-run
+DROP POLICY IF EXISTS "Deny anon reads" ON submissions;
 CREATE POLICY "Deny anon reads" ON submissions
   FOR SELECT USING (false);
 
+DROP POLICY IF EXISTS "Deny anon inserts" ON submissions;
 CREATE POLICY "Deny anon inserts" ON submissions
   FOR INSERT WITH CHECK (false);
 
+DROP POLICY IF EXISTS "Deny anon updates" ON submissions;
 CREATE POLICY "Deny anon updates" ON submissions
   FOR UPDATE USING (false);
 

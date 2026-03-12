@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabaseServer";
-import { createSignedUrl } from "@/lib/signedUrl";
+import { getImagePaths, createSignedUrl } from "@/lib/signedUrl";
 
 const PER_PAGE = 20;
 
@@ -46,10 +46,12 @@ export async function GET(req: NextRequest) {
 
   const items = rows ?? [];
   const rowsWithSignedUrls = await Promise.all(
-    items.map(async (r) => ({
-      ...r,
-      signed_image_url: await createSignedUrl(r.image_path),
-    }))
+    items.map(async (r) => {
+      const paths = getImagePaths(r.image_path);
+      const firstPath = paths[0];
+      const signed_image_url = firstPath ? await createSignedUrl(firstPath) : "";
+      return { ...r, signed_image_url };
+    })
   );
 
   return NextResponse.json({
